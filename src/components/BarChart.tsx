@@ -1,15 +1,32 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ResponsiveBar } from "@nivo/bar";
-import { useTheme } from "@mui/material";
+import { CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { tokens } from "../theme";
-import { mockBarData } from "../data/mockData";
+import UseHttpRequests from "../hooks/useHttpRequest";
 
 const BarChart = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  return (
+  const [barData, setBarData] = useState([]);
+  const { error, isLoading, httpRequest: getBarData } = UseHttpRequests();
+  const isNonMobile = useMediaQuery("(min-width:600px)");
+
+  useEffect(() => {
+    const transformBarData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setBarData(dataObj[item]);
+      }
+    };
+
+    getBarData(
+      { url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/bar.json" },
+      transformBarData
+    );
+  }, [getBarData]);
+
+  let content = (
     <ResponsiveBar
-      data={mockBarData}
+      data={barData}
       theme={{
         axis: {
           domain: {
@@ -45,7 +62,11 @@ const BarChart = ({ isDashboard = false }) => {
       }}
       keys={["hot dog", "burger", "sandwich", "kebab", "fries", "donut"]}
       indexBy="country"
-      margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+      margin={
+        isNonMobile
+          ? { top: 50, right: 130, bottom: 50, left: 60 }
+          : { top: 50, right: 50, bottom: 50, left: 60 }
+      }
       padding={0.3}
       valueScale={{ type: "linear" }}
       indexScale={{ type: "band", round: true }}
@@ -112,30 +133,34 @@ const BarChart = ({ isDashboard = false }) => {
         from: "color",
         modifiers: [["darker", isDashboard ? 0 : 1.6]],
       }}
-      legends={[
-        {
-          dataFrom: "keys",
-          anchor: "bottom-right",
-          direction: "column",
-          justify: false,
-          translateX: 120,
-          translateY: 0,
-          itemsSpacing: 2,
-          itemWidth: 100,
-          itemHeight: 20,
-          itemDirection: "left-to-right",
-          itemOpacity: 0.85,
-          symbolSize: 20,
-          effects: [
-            {
-              on: "hover",
-              style: {
-                itemOpacity: 1,
+      legends={
+        !isNonMobile
+          ? undefined
+          : [
+              {
+                dataFrom: "keys",
+                anchor: "bottom-right",
+                direction: "column",
+                justify: false,
+                translateX: 120,
+                translateY: 0,
+                itemsSpacing: 2,
+                itemWidth: 100,
+                itemHeight: 20,
+                itemDirection: "left-to-right",
+                itemOpacity: 0.85,
+                symbolSize: 20,
+                effects: [
+                  {
+                    on: "hover",
+                    style: {
+                      itemOpacity: 1,
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
-      ]}
+            ]
+      }
       role="application"
       ariaLabel="Nivo bar chart demo"
       barAriaLabel={function (e) {
@@ -143,6 +168,16 @@ const BarChart = ({ isDashboard = false }) => {
       }}
     />
   );
+
+  if (error) {
+    return (content = <h2>{error}</h2>);
+  }
+
+  if (isLoading) {
+    return (content = <CircularProgress color="secondary" />);
+  }
+
+  return <React.Fragment>{content}</React.Fragment>;
 };
 
 export default BarChart;

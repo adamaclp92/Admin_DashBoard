@@ -1,5 +1,5 @@
 import { Box, Theme, Typography, useTheme } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { DataGrid } from "@mui/x-data-grid/DataGrid";
@@ -10,10 +10,28 @@ import {
   GridToolbar,
 } from "@mui/x-data-grid";
 import { mockDataContacts } from "../../data/mockData";
+import UseHttpRequests from "../../hooks/useHttpRequest";
 
 const Contacts = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [contactsData, setContactsData] = useState([]);
+  const { error, isLoading, httpRequest: getContactsData } = UseHttpRequests();
+
+  useEffect(() => {
+    const transformContactsData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setContactsData(dataObj[item]);
+      }
+    };
+
+    getContactsData(
+      {
+        url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/contacts.json",
+      },
+      transformContactsData
+    );
+  }, [getContactsData]);
 
   const columns: GridColumns = [
     { field: "id", headerName: "ID" },
@@ -38,7 +56,7 @@ const Contacts = () => {
     { field: "zipCode", headerName: "Zip Code", flex: 1 },
   ];
 
-  const rows: GridRowsProp = mockDataContacts;
+  const rows: GridRowsProp = contactsData;
 
   return (
     <Box m="20px">

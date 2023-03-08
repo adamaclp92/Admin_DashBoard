@@ -35,7 +35,7 @@ const Dashboard = () => {
           sx={{
             backgroundColor: colors.blueAccent[600],
             color: colors.grey[100],
-            padding: "10px",
+            padding: isNonMobile ? "10px" : "4px",
           }}
         >
           <FileDownloadIcon sx={{ margin: "0 10px 0 0" }} />

@@ -16,7 +16,7 @@ const Geography = () => {
         height="75vh"
         width="150vh"
         border={`1px solid ${colors.grey[100]}`}
-        m="100px 0 0 100px"
+        m="30px 0 0 30px"
         borderRadius="4px"
       >
         <GeoChart />

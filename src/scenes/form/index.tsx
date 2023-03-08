@@ -1,16 +1,31 @@
-import { Box, Button, TextField, useMediaQuery, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { useState } from "react";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 type UserSubmitForm = {
   firstName: string;
   lastName: string;
   email: string;
   contact: string;
-  address1: string;
-  address2: string;
+  address: string;
+  access: string;
 };
 
 const phoneRegExp =
@@ -23,8 +38,7 @@ const userSchema = Yup.object().shape({
   contact: Yup.string()
     .matches(phoneRegExp, "Contact number is not valid")
     .required("Contact is required"),
-  address1: Yup.string().required("Address 1 is required"),
-  address2: Yup.string().required("Address 2 is required"),
+  address: Yup.string().required("Address 1 is required"),
 });
 
 const initialValues = {
@@ -32,17 +46,62 @@ const initialValues = {
   lastName: "",
   email: "",
   contact: "",
-  address1: "",
-  address2: "",
+  address: "",
+  dateOfbirth: new Date(),
+  access: "",
 };
 
 const Form = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isNonMobile = useMediaQuery("(min-width:600px)");
+  const [dateValue, setDateValue] = useState<Dayjs | null>(dayjs("2023-01-01"));
 
-  const handleFormSubmit = (data: UserSubmitForm) => {
-    console.log(data);
+  const handleFormSubmit = async (data: UserSubmitForm) => {
+    const id = await requestLastIdFromContats();
+    const currentDate = dayjs();
+    const age = currentDate.diff(dateValue, "year");
+    const finalUserObject = {
+      id: id + 1,
+      name: data.firstName + " " + data.lastName,
+      age: age,
+      email: data.email,
+      phone: data.contact,
+      access: data.access,
+    };
+    confirmTeamData(finalUserObject);
+  };
+
+  const requestLastIdFromContats = async () => {
+    let jsonLength = 0;
+    return fetch(
+      "https://admin-2f19b-default-rtdb.firebaseio.com/admin/team.json"
+    )
+      .then((response) => response.json())
+      .then((responseJson) => {
+        for (const item in responseJson) {
+          jsonLength++;
+        }
+        return jsonLength;
+      });
+  };
+
+  const confirmTeamData = async (teamData: any) => {
+    try {
+      const response = await fetch(
+        "https://admin-2f19b-default-rtdb.firebaseio.com/admin/team.json",
+        {
+          method: "POST",
+          body: JSON.stringify(teamData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+    } catch (e: any) {
+      console.log(e.message);
+    }
   };
 
   return (
@@ -136,32 +195,60 @@ const Form = () => {
               <TextField
                 fullWidth
                 type="text"
-                id="address1"
-                name="address1"
-                label="Address 1"
+                id="address"
+                name="address"
+                label="Address"
                 variant="filled"
                 onBlur={handleBlur}
                 onChange={handleChange}
-                value={values.address1}
-                error={!!touched.address1 && !!errors.address1}
-                helperText={touched.address1 && errors.address1}
+                value={values.address}
+                error={!!touched.address && !!errors.address}
+                helperText={touched.address && errors.address}
                 sx={{ gridColumn: "span 2" }}
               />
 
-              <TextField
-                fullWidth
-                type="text"
-                id="address2"
-                name="address2"
-                label="Address 2"
-                variant="filled"
-                onBlur={handleBlur}
-                onChange={handleChange}
-                value={values.address2}
-                error={!!touched.address2 && !!errors.address2}
-                helperText={touched.address2 && errors.address2}
-                sx={{ gridColumn: "span 2" }}
-              />
+              <FormControl>
+                <LocalizationProvider
+                  dateAdapter={AdapterDayjs}
+                  sx={{ gridColumn: "span 2" }}
+                >
+                  <DatePicker
+                    label="Date of Birth"
+                    value={dateValue}
+                    onChange={(newValue) => setDateValue(newValue)}
+                    slotProps={{
+                      textField: {
+                        helperText: "MM / DD / YYYY",
+                      },
+                    }}
+                    sx={{ gridColumn: "span 2" }}
+                  />
+                </LocalizationProvider>
+              </FormControl>
+
+              <FormControl>
+                <InputLabel id="select-label">Access</InputLabel>
+                <Select
+                  labelId="select-label"
+                  id="access"
+                  name="access"
+                  value={values.access}
+                  label="Age"
+                  onChange={handleChange}
+                  sx={{
+                    gridColumn: "span 2",
+                    "& .MuiSelect-select, .MuiSelect-select:hover, .MuiSelect:active, .MuiSelect.MenuItem":
+                      {
+                        backgroundColor: colors.primary[500],
+                        border: colors.grey[100],
+                      },
+                  }}
+                >
+                  <MenuItem value="admin">admin</MenuItem>
+                  <MenuItem value="manager">manager</MenuItem>
+                  <MenuItem value="user">user</MenuItem>
+                </Select>
+              </FormControl>
             </Box>
 
             <Box display="flex" justifyContent="end" mt="20px">

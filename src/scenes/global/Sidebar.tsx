@@ -94,7 +94,7 @@ const Sidebar = () => {
         collapsed={isCollapsed}
         style={{
           backgroundColor: colors.primary[400],
-          height: `${isNonMobile ? "97vh" : "2870px"}`,
+          height: `${isNonMobile ? "97vh" : "2890px"}`,
         }}
       >
         <Menu iconShape="square">

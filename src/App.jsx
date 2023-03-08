@@ -16,13 +16,20 @@ import Pie from "./scenes/pie";
 import FAQ from "./scenes/faq";
 import Geography from "./scenes/geography";
 import Calendar from "./scenes/calendar";
+import {
+  mockDataTeam,
+  mockBarData,
+  mockDataInvoices,
+  mockGeographyData,
+  mockDataContacts,
+  mockLineData,
+  mockPieData,
+  mockTransactions,
+} from "./data/mockData";
+import { mockGeoFeatures } from "./data/mockGeoFeatures";
 
 const App = () => {
   const [theme, colorMode] = useMode();
-
-  //calendar modal a prompt helyett
-  //login form
-  //form submit után firebase és azt lekérni a teamhez
 
   return (
     <ColorModeContext.Provider value={colorMode}>

@@ -1,14 +1,33 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { ResponsiveChoropleth } from "@nivo/geo";
 import { mockGeographyData } from "../data/mockData";
 import { mockGeoFeatures } from "../data/mockGeoFeatures";
-import { useTheme } from "@mui/material";
+import { CircularProgress, useTheme } from "@mui/material";
 import { tokens } from "../theme";
+import UseHttpRequests from "../hooks/useHttpRequest";
 
 const GeoChart = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  return (
+  const [geoData, setGeoData] = useState([]);
+  const { error, isLoading, httpRequest: getGeoData } = UseHttpRequests();
+
+  useEffect(() => {
+    const transformGeoData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setGeoData(dataObj[item]);
+      }
+    };
+
+    getGeoData(
+      {
+        url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/geography.json",
+      },
+      transformGeoData
+    );
+  }, [getGeoData]);
+
+  let content = (
     <ResponsiveChoropleth
       data={mockGeographyData}
       theme={{
@@ -86,6 +105,16 @@ const GeoChart = ({ isDashboard = false }) => {
       }
     />
   );
+
+  if (error) {
+    return (content = <h2>{error}</h2>);
+  }
+
+  if (isLoading) {
+    return (content = <CircularProgress color="secondary" />);
+  }
+
+  return <React.Fragment>{content}</React.Fragment>;
 };
 
 export default GeoChart;

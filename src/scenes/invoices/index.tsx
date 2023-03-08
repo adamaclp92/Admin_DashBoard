@@ -1,5 +1,5 @@
 import { Box, Theme, Typography, useTheme } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import { DataGrid } from "@mui/x-data-grid/DataGrid";
@@ -10,10 +10,28 @@ import {
   GridToolbar,
 } from "@mui/x-data-grid";
 import { mockDataInvoices } from "../../data/mockData";
+import UseHttpRequests from "../../hooks/useHttpRequest";
 
 const Invoices = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [invoicesData, setInvoicesData] = useState([]);
+  const { error, isLoading, httpRequest: getInvoicesData } = UseHttpRequests();
+
+  useEffect(() => {
+    const transformInvoicesData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setInvoicesData(dataObj[item]);
+      }
+    };
+
+    getInvoicesData(
+      {
+        url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/invoices.json",
+      },
+      transformInvoicesData
+    );
+  }, [getInvoicesData]);
 
   const dateFormatter = (value: string) => {
     const d = new Date(value);
@@ -54,7 +72,7 @@ const Invoices = () => {
     },
   ];
 
-  const rows: GridRowsProp = mockDataInvoices;
+  const rows: GridRowsProp = invoicesData;
 
   return (
     <Box m="20px">

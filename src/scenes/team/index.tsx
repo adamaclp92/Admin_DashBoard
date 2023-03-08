@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid, GridColumns, GridRowsProp } from "@mui/x-data-grid";
@@ -8,10 +8,28 @@ import { tokens } from "../../theme";
 import AdminPanelSettingsOutlinedIcon from "@mui/icons-material/AdminPanelSettingsOutlined";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 import LockOpenOutlinedIcon from "@mui/icons-material/LockOpenOutlined";
+import UseHttpRequests from "../../hooks/useHttpRequest";
 
 const Team = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const [teamData, setTeamData] = useState<GridColumns[]>([]);
+  const { error, isLoading, httpRequest: getTeamData } = UseHttpRequests();
+
+  useEffect(() => {
+    const transformteamData = (dataObj: GridColumns) => {
+      for (const item in dataObj) {
+        setTeamData((prevItem: any[]) => [...prevItem, dataObj[item]]);
+      }
+    };
+
+    getTeamData(
+      {
+        url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/team.json",
+      },
+      transformteamData
+    );
+  }, [getTeamData]);
 
   const columns: GridColumns = [
     { field: "id", headerName: "ID" },
@@ -63,7 +81,7 @@ const Team = () => {
     },
   ];
 
-  const rows: GridRowsProp = mockDataTeam;
+  const rows: GridRowsProp = teamData;
 
   return (
     <Box m="20px">

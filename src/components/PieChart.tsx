@@ -1,13 +1,31 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { tokens } from "../theme";
 import { ResponsivePie } from "@nivo/pie";
-import { useTheme } from "@mui/material";
+import { CircularProgress, useTheme } from "@mui/material";
 import { mockPieData } from "../data/mockData";
+import UseHttpRequests from "../hooks/useHttpRequest";
 
 const PieChart = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  return (
+
+  const [pieData, setPieData] = useState([]);
+  const { error, isLoading, httpRequest: getPieData } = UseHttpRequests();
+
+  useEffect(() => {
+    const transformPieData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setPieData(dataObj[item]);
+      }
+    };
+
+    getPieData(
+      { url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/pie.json" },
+      transformPieData
+    );
+  }, [getPieData]);
+
+  let content = (
     <ResponsivePie
       data={mockPieData}
       theme={{
@@ -109,6 +127,16 @@ const PieChart = ({ isDashboard = false }) => {
       ]}
     />
   );
+
+  if (error) {
+    return (content = <h2>{error}</h2>);
+  }
+
+  if (isLoading) {
+    return (content = <CircularProgress color="secondary" />);
+  }
+
+  return <React.Fragment>{content}</React.Fragment>;
 };
 
 export default PieChart;

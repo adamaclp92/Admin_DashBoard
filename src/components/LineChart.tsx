@@ -1,15 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { mockLineData } from "../data/mockData";
-import { useTheme } from "@mui/material";
+import { CircularProgress, useMediaQuery, useTheme } from "@mui/material";
 import { tokens } from "../theme";
 import { ResponsiveLine } from "@nivo/line";
+import UseHttpRequests from "../hooks/useHttpRequest";
 
 const LineChart = ({ isDashboard = false }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  return (
+
+  const [lineData, setLineData] = useState([]);
+  const { error, isLoading, httpRequest: getLineData } = UseHttpRequests();
+
+  const isNonMobile = useMediaQuery("(min-width:600px)");
+
+  useEffect(() => {
+    const transformLineData = (dataObj: any) => {
+      for (const item in dataObj) {
+        setLineData(dataObj[item]);
+      }
+    };
+
+    getLineData(
+      {
+        url: "https://admin-2f19b-default-rtdb.firebaseio.com/admin/line.json",
+      },
+      transformLineData
+    );
+  }, [getLineData]);
+
+  let content = (
     <ResponsiveLine
-      data={mockLineData}
+      data={lineData}
       theme={{
         axis: {
           domain: {
@@ -44,7 +66,11 @@ const LineChart = ({ isDashboard = false }) => {
         },
       }}
       colors={isDashboard ? { datum: "color" } : { scheme: "nivo" }}
-      margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+      margin={
+        isNonMobile
+          ? { top: 50, right: 110, bottom: 50, left: 60 }
+          : { top: 50, right: 30, bottom: 50, left: 60 }
+      }
       xScale={{ type: "point" }}
       yScale={{
         type: "linear",
@@ -59,7 +85,7 @@ const LineChart = ({ isDashboard = false }) => {
       axisBottom={{
         tickSize: 5,
         tickPadding: 5,
-        tickRotation: 0,
+        tickRotation: isNonMobile ? 0 : 70,
         legend: isDashboard ? undefined : "transportation",
         legendOffset: 36,
         legendPosition: "middle",
@@ -79,34 +105,48 @@ const LineChart = ({ isDashboard = false }) => {
       pointBorderColor={{ from: "serieColor" }}
       pointLabelYOffset={-12}
       useMesh={true}
-      legends={[
-        {
-          anchor: "bottom-right",
-          direction: "column",
-          justify: false,
-          translateX: 100,
-          translateY: 0,
-          itemsSpacing: 0,
-          itemDirection: "left-to-right",
-          itemWidth: 80,
-          itemHeight: 20,
-          itemOpacity: 0.75,
-          symbolSize: 12,
-          symbolShape: "circle",
-          symbolBorderColor: "rgba(0, 0, 0, .5)",
-          effects: [
-            {
-              on: "hover",
-              style: {
-                itemBackground: "rgba(0, 0, 0, .03)",
-                itemOpacity: 1,
+      legends={
+        !isNonMobile
+          ? undefined
+          : [
+              {
+                anchor: "bottom-right",
+                direction: "column",
+                justify: false,
+                translateX: 100,
+                translateY: 0,
+                itemsSpacing: 0,
+                itemDirection: "left-to-right",
+                itemWidth: 80,
+                itemHeight: 20,
+                itemOpacity: 0.75,
+                symbolSize: 12,
+                symbolShape: "circle",
+                symbolBorderColor: "rgba(0, 0, 0, .5)",
+                effects: [
+                  {
+                    on: "hover",
+                    style: {
+                      itemBackground: "rgba(0, 0, 0, .03)",
+                      itemOpacity: 1,
+                    },
+                  },
+                ],
               },
-            },
-          ],
-        },
-      ]}
+            ]
+      }
     />
   );
+
+  if (error) {
+    return (content = <h2>{error}</h2>);
+  }
+
+  if (isLoading) {
+    return (content = <CircularProgress color="secondary" />);
+  }
+
+  return <React.Fragment>{content}</React.Fragment>;
 };
 
 export default LineChart;
