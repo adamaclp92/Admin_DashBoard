@@ -16,6 +16,7 @@
     "@mui/material": "^5.11.10",
     "@mui/styled-engine-sc": "^5.11.9",
     "@mui/x-data-grid": "^5.17.24",
+    "@mui/x-date-pickers": "^6.0.0",
     "@nivo/bar": "^0.80.0",
     "@nivo/core": "^0.80.0",
     "@nivo/geo": "^0.80.0",
@@ -28,8 +29,10 @@
     "@types/node": "^16.18.12",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "dayjs": "^1.11.7",
     "formik": "^2.2.9",
     "react": "^18.2.0",
+    "react-datepicker": "^4.10.0",
     "react-dom": "^18.2.0",
     "react-pro-sidebar": "^0.7.1",
     "react-router-dom": "^6.8.1",
@@ -62,5 +65,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/react-datepicker": "^4.10.0"
   }
 }
